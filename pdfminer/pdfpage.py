@@ -12,7 +12,7 @@ from pdfminer.pdfexceptions import PDFObjectNotFound, PDFValueError
 from pdfminer.pdfparser import PDFParser
 from pdfminer.pdftypes import dict_value, int_value, list_value, resolve1
 from pdfminer.psparser import LIT
-from pdfminer.utils import parse_rect
+from pdfminer.utils import parse_rect, Rect
 
 log = logging.getLogger(__name__)
 
@@ -70,13 +70,11 @@ class PDFPage:
         mediabox_params: List[Any] = [
             resolve1(mediabox_param) for mediabox_param in self.attrs["MediaBox"]
         ]
-        self.mediabox = parse_rect(resolve1(mediabox_params))
-        self.cropbox = self.mediabox
+        self.mediabox: Rect = resolve1(mediabox_params)
         if "CropBox" in self.attrs:
-            try:
-                self.cropbox = parse_rect(resolve1(self.attrs["CropBox"]))
-            except PDFValueError:
-                pass
+            self.cropbox: Rect = resolve1(self.attrs["CropBox"])
+        else:
+            self.cropbox = self.mediabox
 
         self.rotate = (int_value(self.attrs.get("Rotate", 0)) + 360) % 360
         self.annots = self.attrs.get("Annots")

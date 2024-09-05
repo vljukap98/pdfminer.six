@@ -958,7 +958,7 @@ class PDFPageInterpreter:
 
     def process_page(self, page: PDFPage) -> None:
         log.debug("Processing page: %r", page)
-        (x0, y0, x1, y1) = page.mediabox
+        (x0, y0, x1, y1) = page.cropbox
         if page.rotate == 90:
             ctm = (0, -1, 1, 0, -y0, x1)
         elif page.rotate == 180:

@@ -280,7 +280,7 @@ class TagExtractor(PDFDevice):
     def begin_page(self, page: PDFPage, ctm: Matrix) -> None:
         output = '<page id="%s" bbox="%s" rotate="%d">' % (
             self.pageno,
-            utils.bbox2str(page.mediabox),
+            utils.bbox2str(page.cropbox),
             page.rotate,
         )
         self._write(output)

@@ -77,11 +77,11 @@ class PDFLayoutAnalyzer(PDFTextDevice):
         self._stack: List[LTLayoutContainer] = []
 
     def begin_page(self, page: PDFPage, ctm: Matrix) -> None:
-        (x0, y0, x1, y1) = page.mediabox
+        (x0, y0, x1, y1) = page.cropbox
         (x0, y0) = apply_matrix_pt(ctm, (x0, y0))
         (x1, y1) = apply_matrix_pt(ctm, (x1, y1))
-        mediabox = (0, 0, abs(x0 - x1), abs(y0 - y1))
-        self.cur_item = LTPage(self.pageno, mediabox)
+        cropbox = (0, 0, abs(x0 - x1), abs(y0 - y1))
+        self.cur_item = LTPage(self.pageno, cropbox)
 
     def end_page(self, page: PDFPage) -> None:
         assert not self._stack, str(len(self._stack))
@@ -944,10 +944,15 @@ class HOCRConverter(PDFConverter[AnyIO]):
             "<!--script src='https://unpkg.com/hocrjs'></script--></body></html>\n",
         )
 
-    def write_text(self, text: str) -> None:
+    def _clean_text(self, text: str) -> str:
         if self.stripcontrol:
             text = self.CONTROL.sub("", text)
-        self.write(text)
+        else:
+            text = text.replace("\x00", "")
+        return enc(text)
+    
+    def write_text(self, text: str) -> None:
+        self.write(self._clean_text(text))
 
     def write_word(self) -> None:
         if len(self.working_text) > 0:
@@ -1019,6 +1024,8 @@ class HOCRConverter(PDFConverter[AnyIO]):
                         or self.working_size != item.size
                     ):
                         self.write_word()
+                        self.within_chars = True
+                        self.working_text = ""
                         self.working_bbox = item.bbox
                         self.working_font = item.fontname
                         self.working_size = item.size
