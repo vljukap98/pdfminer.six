@@ -9,7 +9,7 @@ from typing import (
     cast,
 )
 
-from pdfminer import utils
+import pdfminer.utils as utils
 from pdfminer.pdfcolor import PDFColorSpace
 from pdfminer.pdffont import PDFFont, PDFUnicodeNotDefined
 from pdfminer.pdfpage import PDFPage
@@ -242,10 +242,7 @@ class PDFTextDevice(PDFDevice):
 
 class TagExtractor(PDFDevice):
     def __init__(
-        self,
-        rsrcmgr: "PDFResourceManager",
-        outfp: BinaryIO,
-        codec: str = "utf-8",
+        self, rsrcmgr: "PDFResourceManager", outfp: BinaryIO, codec: str = "utf-8"
     ) -> None:
         PDFDevice.__init__(self, rsrcmgr)
         self.outfp = outfp
@@ -284,10 +281,12 @@ class TagExtractor(PDFDevice):
             page.rotate,
         )
         self._write(output)
+        return
 
     def end_page(self, page: PDFPage) -> None:
         self._write("</page>\n")
         self.pageno += 1
+        return
 
     def begin_tag(self, tag: PSLiteral, props: Optional["PDFStackT"] = None) -> None:
         s = ""
@@ -296,21 +295,24 @@ class TagExtractor(PDFDevice):
                 [
                     f' {utils.enc(k)}="{utils.make_compat_str(v)}"'
                     for (k, v) in sorted(props.items())
-                ],
+                ]
             )
         out_s = f"<{utils.enc(cast(str, tag.name))}{s}>"
         self._write(out_s)
         self._stack.append(tag)
+        return
 
     def end_tag(self) -> None:
         assert self._stack, str(self.pageno)
         tag = self._stack.pop(-1)
         out_s = "</%s>" % utils.enc(cast(str, tag.name))
         self._write(out_s)
+        return
 
     def do_tag(self, tag: PSLiteral, props: Optional["PDFStackT"] = None) -> None:
         self.begin_tag(tag, props)
         self._stack.pop(-1)
+        return
 
     def _write(self, s: str) -> None:
         self.outfp.write(s.encode(self.codec))

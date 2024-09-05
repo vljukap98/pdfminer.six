@@ -8,11 +8,11 @@ from pdfminer.pdfdocument import (
     PDFNoPageLabels,
     PDFTextExtractionNotAllowed,
 )
-from pdfminer.pdfexceptions import PDFObjectNotFound, PDFValueError
+from pdfminer.pdfexceptions import PDFObjectNotFound
 from pdfminer.pdfparser import PDFParser
 from pdfminer.pdftypes import dict_value, int_value, list_value, resolve1
 from pdfminer.psparser import LIT
-from pdfminer.utils import parse_rect, Rect
+from pdfminer.utils import Rect
 
 log = logging.getLogger(__name__)
 
